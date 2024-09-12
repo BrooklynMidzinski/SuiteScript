@@ -1,0 +1,178 @@
+Note: SuiteScript is based in JavaScript
+
+
+
+var > stores specific information to reference later
+*variables define data
+
+var message = "Hello, Brooklyn.";
+
+^ this var is storing "Hello, Brooklyn" and calling it 'message' to reference later on in the script these are preferably put at the top of the code
+
+
+var message = "Hello, Brooklyn."
+  alert (message);
+
+^ we have now added a function
+*Functions define behavior
+The 'alert' function displays text in a dialog box that pops up on the screen.
+This is basic javascript. Now let's make it SuiteScript
+
+
+function showMessage () {
+  var message = "Hello, Brooklyn."
+alert (message);
+}
+
+^ We have added another function and called it 'showMessage'
+The 'function' key word is us defining our own function
+The '()' would be where data would normally be stored, but since we do not need any data they are empty
+The '{}' is of course defines the body
+
+The next step in making this SuiteScript is to wrap the buisness logic into a MODULE.
+NetSuite will not accept anything less so ^ DO NOT FORGET
+
+
+define ([], function () {
+  function showMessage () {
+    var message = "Hello, Brooklyn."
+  alert (message);
+  }
+});
+
+^ We DEFINE a custom MODULE by using the 'define' function
+The '[]' is of course an empty list where we would import other modules
+
+So now we have successfully defined the functions behavior, but now we need to define the OUTPUT
+
+
+define ([], function () {
+  function showMessage () {
+    var message = "Hello, Brooklyn.";
+  alert (message);
+  }
+
+  return {
+    pageInit: showMessage
+  };
+});
+
+^ We use the output to associate our buisness logic to specific events dispached by netsuite. These 'specific events' are triggered with editing documents within netsuite.
+  Developers can respond to those changes with our outputs
+  A LARGE part of being a netsuite developer is 1) Knowing what those events are 2) When they get 'fired' 3) Which ones are best suited for your buisness needs
+the 'return' statement defines the output
+'pageInit' is when a user loads a page to edit mode. It is when this happens that NetSuite dispaches an event called 'pageInit'
+
+
+
+With this script we have above we are telling NetSuite execute our 'showMessage' function whenever it fires a 'pageInit' event
+
+
+If I hadn't already done all of these notes the final thing we need to add to the script is our "comments" this is to communicate to yourself + your team what the script is doing and why
+This is for 'good practice'
+Example:
+
+
+/**
+@NApiVersion 2.0
+@NScriptType ClientScript
+@NModuleScope Public
+*/
+define ([], function () {
+  function showMessage () {
+    var message = "Hello, Brooklyn.";
+  alert (message);
+  }
+
+  return {
+    pageInit: showMessage
+  };
+});
+
+The /* indicates a comment
+The @ indicates a special tag that netsuite will execute - be sure to define '@NApiVersion' to the latest version of netsuite
+
+
+Now, be sure to SAVE SAVE SAVE if you don't already have AutoSave on.
+With SuiteScript you will save it as JavaScript (.js)
+
+
+Now if you are not using a subsidiary like (celigo) you will navigate to customization > scripting > scripts > new > add file > create script record
+Name the script > go to deployements > define what records you want your script to affect > save
+
+You should see that type is auto filled with "client"
+And in scripts "Init" function is checked from our special tags
+
+
+
+
+
+Okay sending the message "Hello, Brooklyn." Is hardly applicable to what you will be doing.
+Let's update it to read information on the customer record (if you clicked that in your deployments section) and let's pull data from the "email" part of it
+
+
+/**
+@NApiVersion 2.0
+@NScriptType ClientScript
+@NModuleScope Public
+*/
+define ([], function () {
+  function showMessage (context) {
+    var message = "This customer has not provided an email address.";
+    var email = context.currentRecord.getValue({
+      "field:Id":"email"
+    });
+  alert (message);
+  }
+
+  return {
+    pageInit: showMessage
+  };
+});
+
+
+What we have added is:
+
+  function showMessage (context) {
+    var message = "This customer has not provided an email address.";
+    var email = context.currentRecord.getValue({
+      "field:Id":"email"
+
+Definitions:
+the '.' operator is drilling down into the 'context' object
+In this case we have asked to read the email field from the currectRecord and store it in a variable named "email"
+
+Now, we want to display this message ONLY when the email field is empty
+We will need to add "conditional logic" using our good ole "if" statement
+
+
+/**
+@NApiVersion 2.0
+@NScriptType ClientScript
+@NModuleScope Public
+*/
+define ([], function () {
+  function showMessage (context) {
+    var message = "This customer has not provided an email address.";
+    var email = context.currentRecord.getValue({
+      "field:Id":"email"
+    });
+    if () {
+      alert (message);
+    }
+  }
+
+  return {
+    pageInit: showMessage
+  };
+});
+
+
+^ Here we have wrapped our call to "alert" in an if statement
+Next to the if statement, inside the "()" we will define the conditions
+In order for us to find if the field is empty we will use the 'not' operator which is = "!"
+
+Simply put:
+    if (!email) {
+      alert (message);
+    }
